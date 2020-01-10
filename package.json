@@ -1,0 +1,22 @@
+{
+  "name": "rewax",
+  "version": "1.0.0",
+  "description": "",
+  "main": "rewax.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lantto/rewax.git"
+  },
+  "author": "Erik Lantto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lantto/rewax/issues"
+  },
+  "homepage": "https://github.com/lantto/rewax#readme",
+  "dependencies": {
+    "diff-dom": "^4.1.6"
+  }
+}
