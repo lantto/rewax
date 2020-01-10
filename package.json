@@ -2,9 +2,14 @@
   "name": "rewax",
   "version": "1.0.0",
   "description": "",
-  "main": "rewax.js",
+  "main": "lib/rewax.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "babel src --out-dir lib"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
   },
   "repository": {
     "type": "git",
@@ -18,5 +23,10 @@
   "homepage": "https://github.com/lantto/rewax#readme",
   "dependencies": {
     "diff-dom": "^4.1.6"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1"
   }
 }
