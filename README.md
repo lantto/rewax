@@ -33,8 +33,8 @@ import { render, each } from 'rewax'
 
 let games = [
     { name: 'Canvas Legacy', url: 'https://canvaslegacy.com/' },
-    { name: 'Tombs.io', name: 'https://tombs.io/' },
-    { name: 'Antipole', name: 'http://hopfog.com/antipole-seasons' }
+    { name: 'Tombs.io', url: 'https://tombs.io/' },
+    { name: 'Antipole', url: 'http://hopfog.com/antipole-seasons' }
 ];
 
 render(_ => `
@@ -88,29 +88,28 @@ render(_ => `
 
 ### Async
 ```JavaScript
-import { render, redraw } from 'rewax'
+import { render, redraw, handle } from 'rewax'
 
 let loading = false
 let randomNumber
 
-async function getRandomNumber() {
-    const res = await fetch(`tutorial/random-number`)
-    return await res.text()
+async function getAsyncNumber() {
+    return await new Promise(resolve => setTimeout(_ => resolve(123), 1000))
 }
 
-const onClick = _ => {
+const onClick = async _ => {
     loading = true
-    randomNumber = await getRandomNumber()
+    randomNumber = await getAsyncNumber()
     loading = false
     redraw()
 }
 
 render(_ => `
-    <button onClick=${handle(onClick)}>Generate random number</button>
+    <button onClick=${handle(onClick)}>Get number</button>
 
     ${loading
         ? 'Loading...'
-        : `<p>${randomNumber ? randomNumber : 'Click the button to generate'}</p>`
+        : `<p>${randomNumber ? randomNumber : 'Click the button'}</p>`
     }
 	
 `, document.getElementById('root'))
@@ -169,7 +168,7 @@ export default TodoList
 
 ### Redux
 ```JavaScript
-import { render, handle } from '../vendor/q_p'
+import { render, handle } from 'rewax'
 import { createStore } from 'redux'
 
 function counter(state = 0, action) {
