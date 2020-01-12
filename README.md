@@ -176,7 +176,7 @@ render(_  => bind`
 
 ### Todo List
 
-[CodeSandbox](https://codesandbox.io/s/objective-sara-42757)
+[CodeSandbox](https://codesandbox.io/s/bold-black-ujbti)
 
 ## API
 ### render(rootComponentFunction, [, container])
