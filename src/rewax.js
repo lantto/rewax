@@ -73,6 +73,16 @@ class Rewax {
         this.scopePointer = 0;
     }
 
+    bind(strings, ...expressions) {
+        let output = strings.slice();
+        expressions.forEach((expression, i) => {
+            output[i] += {}.toString.call(expression) === '[object Function]'
+                ? this.handle(expression)
+                : expression;
+        });
+        return output.join('');
+    }
+
     handle(cb, opts) {
         opts = opts || {};
         let index = this.callbackPointer;
@@ -141,6 +151,7 @@ const rewax = new Rewax();
 export const render = rewax.render.bind(rewax);
 export const handle = rewax.handle.bind(rewax);
 export const redraw = rewax.redraw.bind(rewax);
+export const bind = rewax.x.bind(rewax);
 export const useState = rewax.useState.bind(rewax);
 export const onMount = rewax.onMount.bind(rewax);
 export const useScope = rewax.useScope.bind(rewax);
