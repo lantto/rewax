@@ -111,12 +111,10 @@ render(_ => bind`
         ? 'Loading...'
         : `<p>${randomNumber ? randomNumber : 'Click the button'}</p>`
     }
-	
 `, document.getElementById('root'))
 ```
 
 ### Components
-#### - index.js
 ```JavaScript
 import { render, useState, bind, each } from 'rewax'
 
