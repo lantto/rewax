@@ -16,12 +16,12 @@ render(_ => '<h1>Hello World</h1>', document.getElementById('root'))
 
 ### Handlers
 ```JavaScript
-import { render, handle } from 'rewax'
+import { render, bind } from 'rewax'
 
 let count = 0
 
-render(_ => `
-    <button onClick=${handle(_ => count += 1)}>
+render(_ => bind`
+    <button onClick=${_ => count += 1}>
         ${count}
     </button>
 `, document.getElementById('root'))
@@ -53,7 +53,7 @@ render(_ => `
 ### Conditionals
 ```JavaScript
 
-import { render, handle } from 'rewax'
+import { render, bind } from 'rewax'
 
 let user = { loggedIn: false }
 
@@ -61,14 +61,14 @@ function toggle() {
     user.loggedIn = !user.loggedIn
 }
 
-render(_ => `
+render(_ => bind`
     <p>
         ${user.loggedIn 
             ?  `You're logged in`
             :  `Click "Log in" to log in`
         }
     </p>
-    <button onClick=${handle(_ => toggle())}>
+    <button onClick=${_ => toggle()}>
         ${user.loggedIn ? 'Log out' : 'Log in'}
     </button>
 `, document.getElementById('root'))
@@ -76,19 +76,19 @@ render(_ => `
 
 ### Inputs
 ```JavaScript
-import { render, handle } from 'rewax'
+import { render, bind } from 'rewax'
 
 let name = ''
 
-render(_ => `
-    <input onInput=${handle(e => name = e.target.value)} />
+render(_ => bind`
+    <input onInput=${e => name = e.target.value} />
     <p>Hello ${name || 'there'}</p>
 `, document.getElementById('root'))
 ```
 
 ### Async
 ```JavaScript
-import { render, redraw, handle } from 'rewax'
+import { render, redraw, bind } from 'rewax'
 
 let loading = false
 let randomNumber
@@ -104,8 +104,8 @@ const onClick = async _ => {
     redraw()
 }
 
-render(_ => `
-    <button onClick=${handle(onClick)}>Get number</button>
+render(_ => bind`
+    <button onClick=${onClick}>Get number</button>
 
     ${loading
         ? 'Loading...'
@@ -118,57 +118,45 @@ render(_ => `
 ### Components
 #### - index.js
 ```JavaScript
-import { render } from 'rewax'
-import TodoList from './AddTodo'
-import TodoList from './TodoList'
+import { render, useState, bind, each } from 'rewax'
 
 const todos = [];
 
-render(_ => `
-    <h1>Todo</h1>
-    ${AddTodo(todos)}
-    ${TodoList(todos)}
-`, document.getElementById('root'))
-```
-#### - AddTodo.js
-```JavaScript
-import { handle, useState } from 'rewax'
-
-const AddTodo = todos => {
+const AddTodo = _ => {
     const state = useState({value: ''})
 
-    return `
+    return bind`
         <div>
-            <form onSubmit=${handle(e => {
+            <form onSubmit=${e => {
                 e.preventDefault()
                 todos.push(state.value)
                 state.value = ''
-            })}>
-                <input onInput=${handle(e => state.value = e.target.value)} value="${state.value}" />
+            }}>
+                <input onInput=${e => state.value = e.target.value} value="${state.value}" />
                 <button type="submit">Add Todo</button>
             </form>
         </div>
     `
 }
 
-export default AddTodo
-```
-#### - TodoList.js
-```JavaScript
-import { each } from 'rewax'
-
-const TodoList = todos => `
+const TodoList = _ => `
     <ul>
-        ${each(todos, todo => `<li>${todo}</li>`)}
+        ${each(todos, todo => TodoItem(todo))}
     </ul>
 `
 
-export default TodoList
+const TodoItem = todo => `<li>${todo}</li>`
+
+render(_ => `
+    <h1>Todo</h1>
+    ${AddTodo()}
+    ${TodoList()}
+`, document.getElementById('root'))
 ```
 
 ### Redux
 ```JavaScript
-import { render, handle } from 'rewax'
+import { render, bind } from 'rewax'
 import { createStore } from 'redux'
 
 function counter(state = 0, action) {
@@ -182,9 +170,9 @@ function counter(state = 0, action) {
 
 let store = createStore(counter)
 
-render(_  => `
+render(_  => bind`
     <h1>${store.getState()}</h1>
-    <button onClick=${handle(_ => store.dispatch({type: 'INCREMENT'}))}>Increment</button>
+    <button onClick=${_ => store.dispatch({type: 'INCREMENT'})}>Increment</button>
 `, document.getElementById('root'))
 ```
 
@@ -196,11 +184,11 @@ render(_  => `
 ### render(rootComponentFunction, [, container])
 Render a Rewax template function in the supplied container. If no container is supplied it will render the element immediately and return it (mainly to be used together with `useScope`).
 
-### handle(callbackFunction, options)
-Will set up the necessary event listener and run redraw after the callback has been run.
+### bind
+Tag function that sets up all event handlers and returns a binded template that will automatically be redrawn on user input. Use this if you have any immediate event handlers in the template literal.
 
 ### redraw()
-Will recompile the template.
+Will recompile the template (for asynchronous events that should update the DOM).
 
 ### useState(initialState)
 Returns a local state object inside a component, similar to React Hooks and comes with the same drawbacks (cannot be used in components in loops or conditionals).
