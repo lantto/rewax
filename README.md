@@ -68,7 +68,7 @@ render(_ => bind`
             :  `Click "Log in" to log in`
         }
     </p>
-    <button onClick=${_ => toggle()}>
+    <button onClick=${toggle}>
         ${user.loggedIn ? 'Log out' : 'Log in'}
     </button>
 `, document.getElementById('root'))
