@@ -21,14 +21,15 @@ class Rewax {
             maxChildCount: false
         });
 
-        this.statePointer = 0;
-        this.states = [];
+        this.memos = ['state', 'mount', 'unmount', 'scope'].map(type => this.createMemo(type));
+    }
 
-        this.mountPointer = 0;
-        this.onMountFns = [];
-
-        this.scopePointer = 0;
-        this.scopes = [];
+    createMemo(type) {
+        return {
+            type,
+            pointer: 0,
+            hooks: []
+        }
     }
 
     render(rootComponent, container) {
@@ -39,7 +40,7 @@ class Rewax {
         }
 
         if (!container) {
-            this.resetPointers();
+            this.reset();
             return `<div id="${this.id}">${this.rootComponent()}</div>`;
         }
 
@@ -48,13 +49,26 @@ class Rewax {
     }
 
     redraw() {
-        this.resetPointers();
+        this.reset();
         
         let newHtml = document.createElement('div');
         if (typeof this._PARENT_CALLBACK_POINTER_START !== 'undefined') {
             this.parent.callbackPointer = this._PARENT_CALLBACK_POINTER_START;
         }
         newHtml.innerHTML = this.rootComponent();
+
+        this.memos.forEach(memo => {
+            // TODO: Support keys (convert to numeric hash?)
+            memo.hooks.forEach((hook, pointer) => {
+                if (!hook.active) {
+                    if (memo.type === 'unmount') {
+                        hook.effect();
+                    }
+
+                    delete memo.hooks[pointer];
+                }
+            });
+        });
 
         let container = this.container;
         if (!container) {
@@ -65,12 +79,16 @@ class Rewax {
         this.dd.apply(container, this.dd.diff(container, newHtml));
     }
 
-    resetPointers() {
+    reset() {
         window._callbacks[this.id] = [];
         this.callbackPointer = 0;
-        this.statePointer = 0;
-        this.mountPointer = 0;
-        this.scopePointer = 0;
+
+        this.memos.forEach(memo => {
+            memo.pointer = 0;
+            memo.hooks.forEach(hook => {
+                hook.active = false;
+            });
+        });
     }
 
     bind(strings, ...expressions) {
@@ -98,39 +116,35 @@ class Rewax {
         return `window._callbacks['${this.id}'][${index}](event)`;
     }
 
-    useState(initState) {
-        let state;
-
-        if (this.states[this.statePointer]) {
-            state = this.states[this.statePointer]
-        } else {
-            state = this.states[this.statePointer] = initState;
-        }
-
-        this.statePointer++;
-        return state;
+    useState(initState, key) {
+        return this.useMemo('state', _ => initState, key);
     }
 
-    onMount(fn) {
-        if (!this.onMountFns[this.mountPointer]) {
-            this.onMountFns[this.mountPointer] = true;
-            fn();
-        }
-
-        this.mountPointer++;
+    onMount(fn, key) {
+        return this.useMemo('mount', _ => fn(), key);
     }
 
-    useScope() {
-        let scope;
+    onUnmount(fn, key) {
+        return this.useMemo('unmount', _ => fn, key);
+    }
 
-        if (this.scopes[this.scopePointer]) {
-            scope = this.scopes[this.scopePointer]
-        } else {
-            scope = this.scopes[this.scopePointer] = new Rewax(this);
+    useScope(key) {
+        return this.useMemo('scope', _ => new Rewax(this), key);
+    }
+
+    useMemo(type, cb, key) {
+        let memo = this.memos.find(memo => memo.type === type);
+        let pointer = key || memo.pointer++;
+
+        let hook = memo.hooks[pointer];
+
+        if (!hook) {
+            hook = memo.hooks[pointer] = {effect: false, active: true};
+            return hook.effect = cb();
         }
 
-        this.scopePointer++;
-        return scope;
+        hook.active = true;
+        return hook.effect;
     }
     
     handleInput(state, propName) {
@@ -154,6 +168,7 @@ export const redraw = rewax.redraw.bind(rewax);
 export const bind = rewax.bind.bind(rewax);
 export const useState = rewax.useState.bind(rewax);
 export const onMount = rewax.onMount.bind(rewax);
+export const onUnmount = rewax.onUnmount.bind(rewax);
 export const useScope = rewax.useScope.bind(rewax);
 export const handleInput = rewax.handleInput.bind(rewax);
 export const each = rewax.each;
