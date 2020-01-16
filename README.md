@@ -176,7 +176,7 @@ render(_  => bind`
 
 ### Todo List
 
-[CodeSandbox](https://codesandbox.io/s/bold-black-ujbti)
+[CodeSandbox](https://codesandbox.io/s/cranky-black-c0u0d)
 
 ## API
 ### render(rootComponentFunction, [, container])
@@ -198,7 +198,7 @@ Will be run once and used for initializing stuff inside a component. Same drawba
 Creates a locally scoped instance of Rewax. Same drawbacks as `useState` (cannot be used in components in loops or conditionals).
 
 ### each(list, mapFunction)
-Utility function for compiling lists to template strings. This is optional and you may just as well use this:
+Utility function for compiling lists to template strings. If you're not using any hook in the children and you may just as well use this:
 ```JavaScript
 items.map(item => `An ${item}`).join('')
 ```
