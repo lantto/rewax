@@ -189,13 +189,13 @@ Tag function that sets up all event handlers and returns a binded template that 
 Will recompile the template (for asynchronous events that should update the DOM).
 
 ### useState(initialState)
-Returns a local state object inside a component, similar to React Hooks and comes with the same drawbacks (cannot be used in components in loops or conditionals).
+Returns a local state object inside a component, similar to React Hooks.
 
 ### onMount(callbackFunction)
-Will be run once and used for initializing stuff inside a component. Same drawbacks as `useState` (cannot be used in components in loops or conditionals).
+Will be run once and used for initializing stuff inside a component.
 
 ### useScope()
-Creates a locally scoped instance of Rewax. Same drawbacks as `useState` (cannot be used in components in loops or conditionals).
+Creates a locally scoped instance of Rewax, when performance matters.
 
 ### each(list, mapFunction)
 Utility function for compiling lists to template strings. If you're not using any hooks in the children and you may just as well use this:
