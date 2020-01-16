@@ -22,12 +22,12 @@ class Rewax {
         });
 
         this.memos = ['state', 'mount', 'unmount', 'scope'].map(type => this.createMemo(type));
+        this.hookSubKey = false;
     }
 
     createMemo(type) {
         return {
             type,
-            pointer: 0,
             hooks: []
         }
     }
@@ -59,15 +59,15 @@ class Rewax {
 
         this.memos.forEach(memo => {
             // TODO: Support keys (convert to numeric hash?)
-            memo.hooks.forEach((hook, pointer) => {
+            for (let [key, hook] of Object.entries(memo.hooks)) {
                 if (!hook.active) {
                     if (memo.type === 'unmount') {
                         hook.effect();
                     }
 
-                    delete memo.hooks[pointer];
+                    delete memo.hooks[key];
                 }
-            });
+            }
         });
 
         let container = this.container;
@@ -84,10 +84,9 @@ class Rewax {
         this.callbackPointer = 0;
 
         this.memos.forEach(memo => {
-            memo.pointer = 0;
-            memo.hooks.forEach(hook => {
+            for (let [key, hook] of Object.entries(memo.hooks)) {
                 hook.active = false;
-            });
+            }
         });
     }
 
@@ -134,7 +133,11 @@ class Rewax {
 
     useMemo(type, cb, key) {
         let memo = this.memos.find(memo => memo.type === type);
-        let pointer = key || memo.pointer++;
+        let pointer = this.getHashKeyFromStack();
+
+        if (this.hookSubKey || key) {
+            pointer = `${pointer}.${this.hookSubKey || key}`;
+        }
 
         let hook = memo.hooks[pointer];
 
@@ -146,7 +149,31 @@ class Rewax {
         hook.active = true;
         return hook.effect;
     }
-    
+
+    getHashKeyFromStack() {
+        return this.getHashCode((new Error).stack.split('.rootComponent')[0]);
+    }
+   
+    getHashCode(str) {
+        // https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+        var hash = 0, i, chr;
+        if (str.length === 0) return hash;
+        for (i = 0; i < str.length; i++) {
+            chr   = str.charCodeAt(i);
+            hash  = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash;
+    }
+
+    setHookSubKey(key) {
+        this.hookSubKey = key;
+    }
+
+    resetHookSubKey() {
+        this.hookSubKey = false;
+    }
+
     handleInput(state, propName) {
         return this.handle(
             e => e.target.setAttribute('value', state[propName] = e.target.value), 
@@ -154,8 +181,15 @@ class Rewax {
         );
     }
 
-    each(list, fn) {
-        return list.map(fn).join('');
+    each(list, fn, opts) {
+        opts = opts || {};
+        return list.map(item => {
+            let optsKey = opts.key ? item[opts.key] : false;
+            this.setHookSubKey(optsKey || item.key || item.id || JSON.stringify(item));
+            let output = fn(item);
+            this.resetHookSubKey();
+            return output;
+        }).join('');
     }
 }
 
@@ -171,4 +205,4 @@ export const onMount = rewax.onMount.bind(rewax);
 export const onUnmount = rewax.onUnmount.bind(rewax);
 export const useScope = rewax.useScope.bind(rewax);
 export const handleInput = rewax.handleInput.bind(rewax);
-export const each = rewax.each;
+export const each = rewax.each.bind(rewax);
