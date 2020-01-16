@@ -151,7 +151,7 @@ class Rewax {
     }
 
     getHashKeyFromStack() {
-        return this.getHashCode((new Error).stack.split('.rootComponent')[0]);
+        return this.getHashCode((new Error).stack.split('rootComponent')[0]);
     }
    
     getHashCode(str) {
